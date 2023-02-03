@@ -7,8 +7,6 @@ SG_NAME="allow-all"
 env=dev
 #############################
 
-
-
 create_ec2() {
   PRIVATE_IP=$(aws ec2 run-instances \
       --image-id ${AMI_ID} \
@@ -21,11 +19,11 @@ create_ec2() {
   sed -e "s/IPADDRESS/${PRIVATE_IP}/" -e "s/COMPONENT/${COMPONENT}/" -e "s/DOMAIN/${DOMAIN}/" route53.json >/tmp/record.json
   aws route53 change-resource-record-sets --hosted-zone-id ${ZONE_ID} --change-batch file:///tmp/record.json 2>/dev/null
   if [ $? -eq 0 ]; then
-  echo "Server Created - SUCCESS - DNS RECORD - ${COMPONENT}.${DOMAIN}"
+    echo "Server Created - SUCCESS - DNS RECORD - ${COMPONENT}.${DOMAIN}"
   else
-   echo "Server Created - FAILED - DNS RECORD - ${COMPONENT}.${DOMAIN}"
-   exit 1
-   fi
+     echo "Server Created - FAILED - DNS RECORD - ${COMPONENT}.${DOMAIN}"
+     exit 1
+  fi
 }
 
 
@@ -47,3 +45,5 @@ for component in catalogue cart user shipping payment frontend mongodb mysql rab
   COMPONENT="${component}-${env}"
   create_ec2
 done
+
+
