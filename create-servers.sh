@@ -2,10 +2,12 @@
 
 ##### Change these values ###
 ZONE_ID="Z073375427FDPSO83SX5B"
-DOMAIN="chandradevops.online"
+DOMAIN="devopschandra.online"
 SG_NAME="allow-all"
 env=dev
 #############################
+
+
 
 create_ec2() {
   PRIVATE_IP=$(aws ec2 run-instances \
@@ -45,5 +47,3 @@ for component in catalogue cart user shipping payment frontend mongodb mysql rab
   COMPONENT="${component}-${env}"
   create_ec2
 done
-
-
