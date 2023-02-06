@@ -4,10 +4,10 @@ LOG=/tmp/roboshop.log
 echo -e "\e[35m Install Nginx\e[0m"
 yum install nginx -y &>>${LOG}
 if [ $? -eq 0]; then
-  echo SUCCESS
-  else
-    echo FAILURE
-    fi
+echo SUCCESS
+else
+echo FAILURE
+fi
 
 echo -e "\e[35m Remove Nginx Old Content\e[0m"
 rm -rf /usr/share/nginx/html/* &>>${LOG}
