@@ -4,7 +4,7 @@ print_head "setup Redis Repo"
 yum install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y &>>${LOG}
 Status_check
 
-pront_head "Enabling Redis 6.2 dnf Module"
+print_head "Enabling Redis 6.2 dnf Module"
 dnf module enable redis:remi-6.2 -y &>>${LOG}
 Status_check
 
