@@ -6,7 +6,7 @@ if [ -z "${root_mysql_password}" ]; then
   fi
 
 print_head "Disable MySQL Default Module"
-dnf module disable mysql -y
+dnf module disable mysql -y &>>${LOG}
 Status_check
 
 print_head "Copy MySQL Repo File"
@@ -18,11 +18,11 @@ yum install mysql-community-server -y &>>${LOG}
 Status_check
 
 print_head "Enable MySQL Server"
-systemctl enable mysqld
+systemctl enable mysqld &>>${LOG}
 Status_check
 
 print_head "Start MySQL Server"
-systemctl start mysqld
+systemctl start mysqld &>>${LOG}
 Status_check
 
 print_head "Reset Default Database Password"
