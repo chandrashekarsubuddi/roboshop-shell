@@ -15,6 +15,80 @@ print_head() {
   echo -e "\e[1m $1 \e[0m"
 }
 
+APP_PREREQ() {
+
+print_head "Add Application User"
+  id roboshop &>>${LOG}
+  if [ $? -ne 0 ]; then
+  useradd roboshop &>>${LOG}
+  fi
+  Status_check
+
+  mkdir -p /app &>>${LOG}
+
+  print_head "Downloading App Content"
+    curl -L -o /tmp/${component}.zip https://roboshop-artifacts.s3.amazonaws.com/${component}.zip &>>${LOG}
+    Status_check
+
+    print_head "Cleanup Old Content"
+      rm -rf /app/* &>>${LOG}
+      Status_check
+
+      print_head "Extracting App Content"
+        cd /app
+        unzip /tmp/${component}.zip &>>${LOG}
+        Status_check
+
+}
+
+SYSTEMD_SETUP() {
+  print_head "Configuring ${component} Service File"
+    cp ${script_location}/files/${component}.service /etc/systemd/system/${component}.service &>>${LOG}
+    Status_check
+
+    print_head "Reload SystemD"
+
+    systemctl daemon-reload &>>${LOG}
+    Status_check
+
+    print_head "Enable ${component} Service"
+    systemctl enable ${component} &>>${LOG}
+    Status_check
+
+    print_head "Start ${component} Service"
+    systemctl start ${component} &>>${LOG}
+    Status_check
+
+}
+
+LOAD_SCHEMA() {
+  if [ ${schema_load} == "true" ]; then
+    IF [ ${schema_type} == "mongo" ]; then
+    print_head "Configuring Mongo repo"
+    cp ${script_location}/files/mongodb.repo /etc/yum.repos.d/mongodb.repo &>>${LOG}
+    Status_check
+
+    print_head "Install Mongo Client"
+    yum install mongodb-org-shell -y &>>${LOG}
+    Status_check
+
+    print_head "Load Schema"
+    mongo --host mongodb-dev.devopschandra.online </app/schema/${component}.js &>>${LOG}
+    Status_check
+    fi
+
+    IF [ ${schema_type} == "mysql" ]; then
+
+        print_head "Install MySQL Client"
+        yum install mysql -y &>>${LOG}
+        Status_check
+
+        print_head "Load Schema"
+        mysql -h mysql-dev.devopschandra.online -uroot -p${root_mysql_password} < /app/schema/shipping.sql
+        Status_check
+        fi
+    fi
+}
 NODEJS() {
   source common.sh
   print_head "Configuring NodeJS Repos"
@@ -25,27 +99,7 @@ NODEJS() {
   yum install nodejs -y &>>${LOG}
   Status_check
 
-  print_head "Add Application User"
-  id roboshop &>>${LOG}
-  if [ $? -ne 0 ]; then
-  useradd roboshop &>>${LOG}
-  fi
-  Status_check
-
-  mkdir -p /app &>>${LOG}
-
-  print_head "Downloading App Content"
-  curl -L -o /tmp/${component}.zip https://roboshop-artifacts.s3.amazonaws.com/${component}.zip &>>${LOG}
-  Status_check
-
-  print_head "Cleanup Old Content"
-  rm -rf /app/* &>>${LOG}
-  Status_check
-
-  print_head "Extracting App Content"
-  cd /app
-  unzip /tmp/${component}.zip &>>${LOG}
-  Status_check
+APP_PREREQ
 
   print_head "Installing NodeJS Dependencies"
   cd /app &>>${LOG}
@@ -53,33 +107,29 @@ NODEJS() {
   npm install &>>${LOG}
 
   Status_check
-  print_head "Configuring ${component} Service File"
-  cp ${script_location}/files/${component}.service /etc/systemd/system/${component}.service &>>${LOG}
-  Status_check
 
-  print_head "Reload SystemD"
+  SYSTEMD_SETUP
 
-  systemctl daemon-reload &>>${LOG}
-  Status_check
+  LOAD_SCHEMA
+}
 
-  print_head "Enable ${component} Service"
-  systemctl enable ${component} &>>${LOG}
-  Status_check
+MAVEN() {
+  print_head "Install Maven"
+    yum install maven -y &>>${LOG}
+    Status_check
 
-  print_head "Start ${component} Service"
-  systemctl start ${component} &>>${LOG}
-  Status_check
-  if [ ${schema_load} == "true" ]; then
-  print_head "Configuring Mongo repo"
-  cp ${script_location}/files/mongodb.repo /etc/yum.repos.d/mongodb.repo &>>${LOG}
-  Status_check
+    APP_PREREQ
 
-  print_head "Install Mongo Client"
-  yum install mongodb-org-shell -y &>>${LOG}
-  Status_check
+   print_head "Build a package"
+   mvn clean package &>>${LOG}
+   Status_check
 
-  print_head "Load Schema"
-  mongo --host mongodb-dev.devopschandra.online </app/schema/${component}.js &>>${LOG}
-  Status_check
-  fi
+   print_head "Copy App file to App location"
+   mv target/${component}-1.0.jar ${component}.jar &>>${LOG}
+   Status_check
+
+   SYSTEMD_SETUP
+
+   LOAD_SCHEMA
+   
 }
