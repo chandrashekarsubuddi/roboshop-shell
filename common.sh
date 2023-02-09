@@ -63,7 +63,7 @@ SYSTEMD_SETUP() {
 
 LOAD_SCHEMA() {
   if [ ${schema_load} == "true" ]; then
-    IF [ ${schema_type} == "mongo" ]; then
+    if [ ${schema_type} == "mongo" ]; then
     print_head "Configuring Mongo repo"
     cp ${script_location}/files/mongodb.repo /etc/yum.repos.d/mongodb.repo &>>${LOG}
     Status_check
@@ -77,7 +77,7 @@ LOAD_SCHEMA() {
     Status_check
     fi
 
-    IF [ ${schema_type} == "mysql" ]; then
+    if [ ${schema_type} == "mysql" ]; then
 
         print_head "Install MySQL Client"
         yum install mysql -y &>>${LOG}
@@ -131,5 +131,5 @@ MAVEN() {
    SYSTEMD_SETUP
 
    LOAD_SCHEMA
-   
+
 }
