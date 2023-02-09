@@ -17,12 +17,12 @@ print_head "Install MySQL Server"
 yum install mysql-community-server -y &>>${LOG}
 Status_check
 
-print_head "Enable MySQL Server"
+print_head "Enable MySQL"
 systemctl enable mysqld &>>${LOG}
 Status_check
 
-print_head "Start MySQL Server"
-systemctl start mysqld &>>${LOG}
+print_head "Start MySQL"
+systemctl restart mysqld &>>${LOG}
 Status_check
 
 print_head "Reset Default Database Password"
