@@ -171,7 +171,7 @@ GOLANG() {
 print_head "Update passwords in Service File"
           sed -i -e "s/roboshop_rabbitmq_password/${roboshop_rabbitmq_password}/" ${script_location}/files/${component}.service &>>${LOG}
           Status_check
-          
+
              SYSTEMD_SETUP
 
 }
